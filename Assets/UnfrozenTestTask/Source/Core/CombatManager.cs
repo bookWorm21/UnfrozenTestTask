@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnfrozenTestTask.Source.UI.Windows;
 using UnityEngine;
 
 namespace UnfrozenTestTask.Source.Core
@@ -12,6 +13,8 @@ namespace UnfrozenTestTask.Source.Core
         [SerializeField] private Transform _agentsContainer;
         [SerializeField] private CombatAgent _agentPrefab;
         [SerializeField] private StepVisualizer _stepVisualizer;
+        [SerializeField] private WinWindow _winWindow;
+        [SerializeField] private LoseWindow _loseWindow;
 
         private List<CombatAgent> _allAgentsOnCombat = new List<CombatAgent>();
         private Queue<CombatAgent> _moveQueue = new Queue<CombatAgent>();
@@ -24,8 +27,8 @@ namespace UnfrozenTestTask.Source.Core
         
             var playerSquad = SpawnSquad(playerAgents, _playerAgentsPoints, true);
             var enemySquad = SpawnSquad(enemyAgents, _enemyAgentsPoints, false, true);
+            
             _stepVisualizer.Init(_allAgentsOnCombat);
-
             CombatData = new CombatData(playerSquad, enemySquad);
 
             StartCoroutine(FightCoroutine());
@@ -51,7 +54,14 @@ namespace UnfrozenTestTask.Source.Core
                 endFight = EndFight(out playerWin);
             }
 
-            Debug.Log(playerWin ? "PlayerWin" : "PlayerLose");
+            if(playerWin)
+            {
+                _winWindow.Show();
+            }
+            else
+            {
+                _loseWindow.Show();
+            }
         }
 
         private bool EndFight(out bool isPlayerWin)

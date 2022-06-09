@@ -13,6 +13,9 @@ namespace UnfrozenTestTask.Source
         [SerializeField] private float _timeForMoveCenter;
         [SerializeField] private float _timeForReturn;
         [SerializeField] private SelectActionWindow _selectActionWindow;
+        [SerializeField] private SelectEnemyTargetWindow _selectEnemyWindow;
+        [SerializeField] private SelectingEnemyTarget _selectingEnemyTarget;
+        [SerializeField] private GameObject _playerAgentMark;
 
         private List<CombatAgent> AllAgents;
 
@@ -23,10 +26,42 @@ namespace UnfrozenTestTask.Source
 
         public IEnumerator StepProcess(CombatAgent source)
         {
-            var opponent = FindOpponent(source);
+            CombatAgent opponent = null;
+            var actionType = SelectingActionType.Attack;
+            if (source.IsPlayerAgent)
+            {
+                _playerAgentMark.gameObject.SetActive(true);
+                var point = source.transform.position;
+                point.y += 3.5f;
+                _playerAgentMark.transform.position = point; 
+                
+                _selectActionWindow.Show();
+                yield return _selectActionWindow.SelectActionCoroutine();
+                _selectActionWindow.Hide();
+                actionType = _selectActionWindow.ActionType;
 
+                if (actionType == SelectingActionType.Attack)
+                {
+                    _selectEnemyWindow.Show();
+                    yield return _selectingEnemyTarget.SelectTarget();
+                    _selectEnemyWindow.Hide();
+                    opponent = _selectingEnemyTarget.SelectedAgent;
+                }
+                
+                _playerAgentMark.gameObject.SetActive(false);
+            }
+            else
+            {
+                opponent = FindOpponent(source);
+            }
+
+            if (actionType == SelectingActionType.Skip)
+            {
+                yield break;
+            }
+            
             if (opponent == null) yield break;
-
+            
             var opponentLastPosition = opponent.transform.position;
             var opponentNewPosition = _centerPoint.position +
                                       new Vector3(opponent.IsPlayerAgent ? -_offsetXFromCenter : _offsetXFromCenter, 0,
@@ -35,21 +70,6 @@ namespace UnfrozenTestTask.Source
             var sourceLastPosition = source.transform.position;
             var sourceNewPosition = _centerPoint.position +
                                     new Vector3(source.IsPlayerAgent ? -_offsetXFromCenter : _offsetXFromCenter, 0, 0);
-
-            var actionType = SelectingActionType.Attack;
-            if (source.IsPlayerAgent)
-            {
-                _selectActionWindow.Show();
-                _selectActionWindow.Reset();
-                yield return _selectActionWindow.SelectActionCoroutine();
-                _selectActionWindow.Hide();
-                actionType = _selectActionWindow.ActionType;
-            }
-
-            if (actionType == SelectingActionType.Skip)
-            {
-                yield break;
-            }
 
             var elapsedTime = 0.0f;
             while (elapsedTime < _timeForMoveCenter)
@@ -66,8 +86,7 @@ namespace UnfrozenTestTask.Source
 
             source.transform.position = sourceNewPosition;
             opponent.transform.position = opponentNewPosition;
-
-
+            
             yield return source.Attack(opponent);
 
             elapsedTime = 0;

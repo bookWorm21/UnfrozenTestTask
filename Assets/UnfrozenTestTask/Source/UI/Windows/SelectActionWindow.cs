@@ -45,18 +45,11 @@ namespace UnfrozenTestTask.Source.UI.Windows
         {
             gameObject.SetActive(false);
         }
-
-        public void Reset()
-        {
-            _isSelectAction = false;
-        }
-
+        
         public IEnumerator SelectActionCoroutine()
         {
-            while (!_isSelectAction)
-            {
-                yield return null;
-            }
+            _isSelectAction = false;
+            yield return new WaitUntil(() => _isSelectAction);
         }
 
         private void SelectAction(SelectingActionType actionType)
