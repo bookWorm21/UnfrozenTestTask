@@ -42,9 +42,16 @@ namespace UnfrozenTestTask.Source.Core
                     CreateMoveQueue();
                 }
 
-                yield return _stepVisualizer.StepProcess(_moveQueue.Dequeue());
+                var agent = _moveQueue.Dequeue();
+                if (agent.IsAlive)
+                {
+                    yield return _stepVisualizer.StepProcess(agent);
+                }
+
                 endFight = EndFight(out playerWin);
             }
+
+            Debug.Log(playerWin ? "PlayerWin" : "PlayerLose");
         }
 
         private bool EndFight(out bool isPlayerWin)

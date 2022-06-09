@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Spine.Unity;
 using UnityEngine;
 
@@ -31,6 +32,14 @@ namespace UnfrozenTestTask.Source
             
             _skeletonAnimation.loop = true;
             _skeletonAnimation.skeleton.scaleX = isMirroring ? -1 : 1 * _skeletonAnimation.skeleton.scaleX;
+        }
+
+        public IEnumerator Attack(CombatAgent target)
+        {
+            var track = _skeletonAnimation.state.SetAnimation(0, AttackAnimationName, false);
+            yield return new WaitForSpineAnimationComplete(track);
+            target.ApplyDamage(_damage);
+            _skeletonAnimation.state.SetAnimation(0, IdleAnimationName, true);
         }
 
         public void ApplyDamage(int damage)

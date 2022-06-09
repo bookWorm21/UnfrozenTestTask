@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: DefaultAgent
   m_EditorClassIdentifier: 
   _damage: 10
-  _health: 50
+  _health: 20
